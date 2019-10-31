@@ -14,7 +14,7 @@ def plt_latex(dpi=120):
     matplotlib.rcParams['figure.dpi'] = dpi
 
 # Read an HDF5 file with given path (or default /) and return dictionary of numpy arrays.
-def read_dict_from_disk(outfile, path='/'):
+def h5_read_dict(outfile, path='/'):
     import h5py
     hf = h5py.File(outfile, 'r')
     cc = {}
