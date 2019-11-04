@@ -2,8 +2,8 @@ from __future__ import division
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Set up latex for plt and change default figure dpi.
 def plt_latex(dpi=120):
+    """Set up latex for plt and change default figure dpi."""
     import matplotlib.colors
     # Latex for plt
     from matplotlib import rc
@@ -13,8 +13,8 @@ def plt_latex(dpi=120):
     # default figure size
     matplotlib.rcParams['figure.dpi'] = dpi
 
-# Read an HDF5 file with given path (or default /) and return dictionary of numpy arrays.
 def h5_read_dict(outfile, path='/'):
+    """Read an HDF5 file with given path (or default /) and return dictionary of numpy arrays."""
     import h5py
     hf = h5py.File(outfile, 'r')
     cc = {}
@@ -23,18 +23,18 @@ def h5_read_dict(outfile, path='/'):
     hf.close()
     return cc
 
-# Read cols of GenericIO file f and return dictionary of numpy arrays.
 def gio_read_dict(f, cols):
+    """Read cols of GenericIO file f and return dictionary of numpy arrays."""
     import genericio as gio
     return { k:gio.gio_read(f, k)[0] for k in cols }
 
-# Pickles dictionary d in outfile f.
 def pickle_save_dict(f, d):
+    """Pickles dictionary d in outfile f."""
     import pickle
     pickle.dump( d, open( f, 'wb' ) )
 
-# Returns pickled object in f.
 def loadpickle(f):
+    """Returns pickled object in f."""
     import pickle
     return pickle.load( open( f, 'rb' ) )
 
@@ -73,5 +73,5 @@ def hist(vals, bins=500, normed=False, plotFlag=True, label='', alpha=1, range=N
             cnts = np.true_divide(cnts, normScalar)
 
     if plotFlag:
-        plt.plot(xarr, cnts, label=label, alpha=alpha)
+        plt.scatter(xarr, cnts, s=1,label=label, alpha=alpha)
     return (xarr, cnts)
