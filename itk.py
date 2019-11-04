@@ -38,7 +38,7 @@ def loadpickle(f):
     import pickle
     return pickle.load( open( f, 'rb' ) )
 
-def hist(vals, bins=500, normed=False, plotFlag=True, label='', alpha=1, range=None, normScalar=1, normCnts=False, normBinsize=False):
+def hist(vals, bins=500, normed=False, plotFlag=True, label='', alpha=1, range=None, normScalar=1, normCnts=False, normBinsize=False, normLogCnts=False):
     """
     Returns histogram of vals in (default 500) bins.
     
@@ -47,7 +47,7 @@ def hist(vals, bins=500, normed=False, plotFlag=True, label='', alpha=1, range=N
     vals : np 1d array 
         Data points
     normed : bool
-        If true, normalizes by counts (if normCnts), bin size (if normBinsize), scalar (if normScalar given)
+        If true, normalizes by counts (if `normCnts`), bin size (if `normBinsize`), scalar (if `normScalar` given), log10(cnts) (if `normLogCnts`)
     plotFlag : bool
         If true, plots histogram with `label` and `alpha`.
     range : tuple
@@ -71,7 +71,9 @@ def hist(vals, bins=500, normed=False, plotFlag=True, label='', alpha=1, range=N
             cnts = np.true_divide(cnts, (bedg[1:] - bedg[:-1]))
         if normScalar != 1:
             cnts = np.true_divide(cnts, normScalar)
+        if normLogCnts:
+             cnts = np.log10(cnts)
 
     if plotFlag:
-        plt.scatter(xarr, cnts, s=1,label=label, alpha=alpha)
+        plt.plot(xarr, cnts, '.', ms=1,label=label, alpha=alpha)
     return (xarr, cnts)
