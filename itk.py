@@ -38,7 +38,7 @@ def loadpickle(f):
     import pickle
     return pickle.load( open( f, 'rb' ) )
 
-def hist(vals, bins=500, normed=False, plotFlag=True, label='', alpha=1, range=None, normScalar=1, normCnts=False, normBinsize=False, normLogCnts=False):
+def hist(vals, bins=500, normed=False, plotFlag=True, label='', alpha=1, range=None, normScalar=1, normCnts=False, normBinsize=False, normLogCnts=False, plotOptions='.'):
     """
     Returns histogram of vals in (default 500) bins.
     
@@ -75,5 +75,5 @@ def hist(vals, bins=500, normed=False, plotFlag=True, label='', alpha=1, range=N
              cnts = np.log10(cnts)
 
     if plotFlag:
-        plt.plot(xarr, cnts, '.', ms=1,label=label, alpha=alpha)
+        plt.plot(xarr, cnts, plotOptions, ms=2,label=label, alpha=alpha)
     return (xarr, cnts)
