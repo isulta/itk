@@ -14,7 +14,7 @@ def plt_latex(dpi=120):
     matplotlib.rcParams['figure.dpi'] = dpi
 
 def h5_read_dict(outfile, path='/'):
-    """Read an HDF5 file with given path (or default /) and return dictionary of numpy arrays."""
+    """Read an HDF5 file with given `path` (or default /) and return dictionary of numpy arrays."""
     import h5py
     hf = h5py.File(outfile, 'r')
     cc = {}
@@ -24,6 +24,8 @@ def h5_read_dict(outfile, path='/'):
     return cc
 
 def h5_write_dict(outfile, dict, group):
+    """Write an HDF5 file `outfile` with given `dict` in `group`."""
+    import h5py
     f = h5py.File(outfile, 'w')
     grp = f.create_group(group)
     for k, v in dict.items():
