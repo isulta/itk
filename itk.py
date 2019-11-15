@@ -23,6 +23,13 @@ def h5_read_dict(outfile, path='/'):
     hf.close()
     return cc
 
+def h5_write_dict(outfile, dict, group):
+    f = h5py.File(outfile, 'w')
+    grp = f.create_group(group)
+    for k, v in dict.items():
+        grp[k] = v
+    f.close()
+
 def gio_read_dict(f, cols):
     """Read cols of GenericIO file f and return dictionary of numpy arrays."""
     import genericio as gio
