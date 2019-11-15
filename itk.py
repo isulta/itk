@@ -77,3 +77,7 @@ def hist(vals, bins=500, normed=False, plotFlag=True, label='', alpha=1, range=N
     if plotFlag:
         plt.plot(xarr, cnts, plotOptions, ms=2,label=label, alpha=alpha)
     return (xarr, cnts)
+
+def periodic_bcs(x, x_ref, boxsize):
+    """Returns `x` (np array or scalar) adjusted to have shortest distance to `x_ref` (np array (only permitted if `x` is array) or scalar) according to PBCs of length boxsize."""
+    return x + boxsize*((x-x_ref)<-(boxsize/2)) + -boxsize*((x-x_ref)>(boxsize/2))
