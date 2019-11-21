@@ -99,7 +99,7 @@ def many_to_one(x1, x0):
     assert np.all(np.isin(x1,x0)), "Elements of x1 exist that are not in x0."
 
     # Match x1 elements with x0.
-    _, _, idx4 = np.intersect1d(x1, x0, return_indices=True)
+    _, _, idx4 = np.intersect1d(x1, x0, return_indices=True, assume_unique=False)
 
     # Unique x1 elements with inverse indices.
     _, idx_inv = np.unique(x1, return_inverse=True)
