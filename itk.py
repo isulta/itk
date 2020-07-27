@@ -186,9 +186,11 @@ def many_to_one(x1arr, x0arr, verbose=False, assert_x0_unique=True, assert_x1_in
     return x0_indices[inv1]
 
 def reldif(x1,x2):
+    '''Returns relative difference between arrays `x1` and `x2`.'''
     return np.abs(x1-x2)/((x1+x2)/2)
 
 def nratioerr(n, nerr, nfid, nfiderr):
+    '''Returns error of f=n/nfid given arrays `n` and `nfid` with errors `nerr` and `nfiderr`, respectively.'''
     return np.sqrt( (nerr/nfid)**2 + (n*nfiderr/nfid**2)**2 )
 
 def intersect1d_GPU(ar1, ar2, assume_unique=False, return_indices=False):
