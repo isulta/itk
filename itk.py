@@ -193,6 +193,13 @@ def nratioerr(n, nerr, nfid, nfiderr):
     '''Returns error of f=n/nfid given arrays `n` and `nfid` with errors `nerr` and `nfiderr`, respectively.'''
     return np.sqrt( (nerr/nfid)**2 + (n*nfiderr/nfid**2)**2 )
 
+def real_fof_tags(fht):
+    '''Takes an array of fof_halo_tags `fht` and returns an array of the same length of the "real" fof halo tags.
+    For non-fragment halos, the real tag is just the f.h.t.
+    For fragment halos, the real tag is the base f.h.t. of the fof group the fragment belongs to.
+    '''
+    return (fht<0)*np.bitwise_and(fht*-1, 0xffffffffffff) + (fht>=0)*fht
+
 def intersect1d_GPU(ar1, ar2, assume_unique=False, return_indices=False):
     '''Based on np.intersect1d. Special fn for LJ cc gen'''
     import cupy as cp
