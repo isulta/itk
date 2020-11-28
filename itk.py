@@ -59,6 +59,26 @@ def gio_read_dict(f, cols):
     import genericio as gio
     return { k:gio.gio_read(f, k)[0] for k in cols }
 
+def read_binary_sh(step, binarydir, flist=None, verbose=True, columns=[('fof_halo_tag',np.int64), ('fof_halo_count',np.int64), ('subhalo_tag',np.int64), ('subhalo_count',np.int64), ('subhalo_mass',np.float32)]):
+    """Read a binary format subhalo catalog and return a dictionary.
+    Define either both step and binarydir, or flist."""
+    import os
+    binary_keys = [k for k,_ in columns]
+    dt = np.dtype(columns)
+
+    if flist is None:
+        flist = [ os.path.join(binarydir, f) for f in os.listdir(binarydir) if ('binary' in f) and (str(step) in f) ]
+    
+    binarydict_lists = {k:[] for k in binary_keys}
+    for f in flist:
+        if verbose:
+            print(f)
+        x = np.fromfile(f, dtype=dt)
+        for k in binary_keys:
+            binarydict_lists[k].append(x[k])
+    binarydict = { k:np.concatenate(binarydict_lists[k]) for k in binary_keys  }
+    return binarydict
+
 def pickle_save_dict(f, d):
     """Pickles dictionary d in outfile f."""
     import pickle
