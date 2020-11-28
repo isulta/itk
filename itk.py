@@ -295,7 +295,7 @@ def mparticle(OMEGA_DM, wb, h, Vi, Ni):
     OMEGA_M = Omega_M(OMEGA_DM, wb, h)
     # rhocrit = (3*(100 * u.km/u.s/u.Mpc)**2/(8*np.pi*G)).to(u.Msun/u.Mpc**3) #h^2 Msun/Mpc^3
     rhocrit = 2.77536627e11 #h^2 Msun/Mpc^3
-    return (Vi/Ni)**3 * rhocrit.value * OMEGA_M
+    return (Vi/Ni)**3 * rhocrit * OMEGA_M
 
 # Define `itk.SIMPARAMS` as dict of cosmology simulation parameters. See `simulationParams.yaml`.
 import yaml, os                                                                                                                                   
