@@ -273,3 +273,25 @@ def many_to_one_GPU(ar1, ar2):
     ar2_indices = ind2[ aux_sort_indices[1:][mask] - ar1.size ]                 # ar2_indices on Host
 
     return ar2_indices[inv1]                                                    # return on Host
+
+### COSMOLOGY ###
+def Omega_b(wb, h):
+    return wb/h**2
+
+def Omega_M(OMEGA_DM, wb, h):
+    return OMEGA_DM + Omega_b(wb, h)
+
+def Omega_L(OMEGA_DM, wb, h):
+    return 1 - Omega_M(OMEGA_DM, wb, h)
+
+def mparticle(OMEGA_DM, wb, h, Vi, Ni):
+    """Returns particle mass in Msun/h.
+    [Vi]: Mpc/h
+    Vi and Ni are defined as V=Vi**3, N=Ni**3.
+    """
+    from astropy.constants import G
+    from astropy import units as u
+    
+    OMEGA_M = Omega_M(OMEGA_DM, wb, h)
+    rhocrit = (3*(100 * u.km/u.s/u.Mpc)**2/(8*np.pi*G)).to(u.Msun/u.Mpc**3) #h^2 Msun/Mpc^3
+    return (Vi/Ni)**3 * rhocrit.value * OMEGA_M
