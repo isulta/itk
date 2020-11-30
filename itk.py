@@ -59,6 +59,17 @@ def gio_read_dict(f, cols):
     import genericio as gio
     return { k:gio.gio_read(f, k)[0] for k in cols }
 
+def gio_combine(flist, cols):
+    """Reads cols of the sets of GenericIO files defined in `flist` and combines them into a dict."""
+    res_list = {k:[] for k in cols}
+    for f in flist:
+        print(f)
+        fdict = gio_read_dict(f, cols)
+        for k in cols:
+            res_list[k].append(fdict[k])
+    res = { k:np.concatenate(res_list[k]) for k in cols }
+    return res
+
 def read_binary_sh(step, binarydir, flist=None, verbose=True, columns=[('fof_halo_tag',np.int64), ('fof_halo_count',np.int64), ('subhalo_tag',np.int64), ('subhalo_count',np.int64), ('subhalo_mass',np.float32)]):
     """Read a binary format subhalo catalog and return a dictionary.
     Define either both step and binarydir, or flist."""
