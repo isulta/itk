@@ -285,6 +285,29 @@ def many_to_one_GPU(ar1, ar2):
 
     return ar2_indices[inv1]                                                    # return on Host
 
+def duplicate_rows(dict1, sort_key, printSame=False):
+    '''Given `dict1` of 1d np arrays (all of the same size), examines rows which have duplicate values for the column `sort_key`.'''
+    dict_sorted_idx = np.argsort(dict1[sort_key])
+    dict_sorted = {k:dict1[k][dict_sorted_idx].copy() for k in dict1.keys() if dict1[k] is not None}
+    
+    vals_un, idx_un, cnts_un = np.unique(dict_sorted[sort_key], return_index=True, return_counts=True)
+    
+    idx_repeated_arr = np.flatnonzero(cnts_un>1)
+    print(f'There are {len(idx_repeated_arr)} {sort_key} that have at least 1 duplicate.')
+    print(f'At most, {sort_key} is repeated {cnts_un.max()} times.\n')
+    for idx_repeated in idx_repeated_arr:
+        first_idx = idx_un[idx_repeated]
+        cnts_el = cnts_un[idx_repeated]
+        print(f'\n{sort_key} {vals_un[idx_repeated]} is repeated {cnts_el} times.')
+        for k in dict_sorted.keys():
+            first_el = dict_sorted[k][first_idx]
+            el_array = dict_sorted[k][first_idx:first_idx+cnts_el]
+            if (el_array==first_el).all():
+                if printSame:
+                    print(f'{k} column matches for this {sort_key}.')
+            else:
+                print(f'{k} column DOES NOT match for this {sort_key}: {el_array}.')
+
 ### COSMOLOGY ###
 def Omega_b(wb, h):
     return wb/h**2
