@@ -294,7 +294,7 @@ def duplicate_rows(dict1, sort_key, printSame=False):
     
     idx_repeated_arr = np.flatnonzero(cnts_un>1)
     print(f'There are {len(idx_repeated_arr)} {sort_key} that have at least 1 duplicate.')
-    print(f'At most, {sort_key} is repeated {cnts_un.max()} times.\n')
+    print(f'Any {sort_key} shows up at most {cnts_un.max()} times.\n')
     for idx_repeated in idx_repeated_arr:
         first_idx = idx_un[idx_repeated]
         cnts_el = cnts_un[idx_repeated]
