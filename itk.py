@@ -304,7 +304,7 @@ def duplicate_rows(dict1, sort_key, printSame=False):
             el_array = dict_sorted[k][first_idx:first_idx+cnts_el]
             if (el_array==first_el).all():
                 if printSame:
-                    print(f'{k} column matches for this {sort_key}.')
+                    print(f'{k} column matches for this {sort_key}: {first_el}.')
             else:
                 print(f'{k} column DOES NOT match for this {sort_key}: {el_array}.')
 
