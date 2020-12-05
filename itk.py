@@ -308,6 +308,10 @@ def duplicate_rows(dict1, sort_key, printSame=False):
             else:
                 print(f'{k} column DOES NOT match for this {sort_key}: {el_array}.')
 
+def inrange(a, ra):
+    a1, a2 = ra
+    return (a1 <= a)&(a <= a2)
+
 ### COSMOLOGY ###
 def Omega_b(wb, h):
     return wb/h**2
