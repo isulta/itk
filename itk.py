@@ -13,6 +13,10 @@ def plt_latex(dpi=120):
     # default figure size
     matplotlib.rcParams['figure.dpi'] = dpi
 
+def combine_dicts(dict1, dict2):
+    '''Combines two dicts of 1D numpy arrays, where the keys in the returned dict are the common keys of dict1 and dict2.'''
+    return { k : np.concatenate((dict1[k], dict2[k])) for k in set(dict1.keys()).intersection(dict2.keys()) }
+
 def h5_read_dict(outfile, path='/'):
     """Read an HDF5 file with given `path` (or default /) and return dictionary of numpy arrays."""
     import h5py
