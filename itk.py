@@ -22,6 +22,13 @@ def grep_dict(dict1, col, vals):
     grep_dict_mask = np.isin(dict1[col], vals)
     return { k : dict1[k][grep_dict_mask].copy() for k in dict1.keys() }
 
+def replace_elems(arr1, vals1, vals2):
+    '''Given 1d np array `arr1`, replaces all occurances of vals1[i] in `arr1` with vals2[i].'''
+    res = arr1.copy()
+    for v1, v2 in zip(vals1, vals2):
+        res = np.where(arr1==v1, v2, res)
+    return res
+
 def h5_read_dict(outfile, path='/'):
     """Read an HDF5 file with given `path` (or default /) and return dictionary of numpy arrays."""
     import h5py
