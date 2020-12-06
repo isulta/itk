@@ -17,6 +17,11 @@ def combine_dicts(dict1, dict2):
     '''Combines two dicts of 1D numpy arrays, where the keys in the returned dict are the common keys of dict1 and dict2.'''
     return { k : np.concatenate((dict1[k], dict2[k])) for k in set(dict1.keys()).intersection(dict2.keys()) }
 
+def grep_dict(dict1, col, vals):
+    '''Given a dict of 1D numpy arrays (all of same size), returns a new dict of only the rows that have a value of `col` that's in list `vals`.'''
+    grep_dict_mask = np.isin(dict1[col], vals)
+    return { k : dict1[k][grep_dict_mask].copy() for k in dict1.keys() }
+
 def h5_read_dict(outfile, path='/'):
     """Read an HDF5 file with given `path` (or default /) and return dictionary of numpy arrays."""
     import h5py
