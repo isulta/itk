@@ -328,6 +328,33 @@ def inrange(a, ra):
     a1, a2 = ra
     return (a1 <= a)&(a <= a2)
 
+def binaryarray_outline(binaryarr, X, Y):
+    '''Given a 2D np binary array `binaryarr`, and two 1D np arrays `X` and `Y` that label the columns and rows of `binaryarr`,
+    respectively, returns a list of lines segments that form an outline of the contiguous regions of `binaryarr[y,x]==True`.
+    
+    The outline assumes that `binaryarr` will be plotted with `plt.pcolormesh(X, Y, binaryarr, shading='nearest')`.
+    The output list of line segments has the form `line_segments_pts=[line1, line2, ...]` where `linen=((x0,y0),(x1,y1))`.
+    
+    The outline can be plotted using `ax.add_collection(matplotlib.collections.LineCollection(line_segments_pts))`.
+    '''
+    line_segments_pts = []
+    for i, y in enumerate(Y):
+        for j, x in enumerate(X[:-1]):
+            if binaryarr[i,j]^binaryarr[i,j+1]:
+                x0 = (x+X[j+1])/2
+                dy_d = (y - Y[i-1])/2 if i>0 else (Y[i+1] - y)/2
+                dy_u = (Y[i+1] - y)/2 if i<(len(Y)-1) else (y - Y[i-1])/2
+                line_segments_pts.append( ((x0,y-dy_d),(x0,y+dy_u)) )
+
+    for j, x in enumerate(X):
+        for i, y in enumerate(Y[:-1]):
+            if binaryarr[i,j]^binaryarr[i+1,j]:
+                y0 = (y+Y[i+1])/2
+                dx_l = (x - X[j-1])/2 if j>0 else (X[j+1] - x)/2
+                dx_r = (X[j+1] - x)/2 if j<(len(X)-1) else (x - X[j-1])/2
+                line_segments_pts.append( ((x-dx_l,y0),(x+dx_r,y0)) )
+    return line_segments_pts
+
 ### COSMOLOGY ###
 def Omega_b(wb, h):
     return wb/h**2
