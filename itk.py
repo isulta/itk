@@ -23,7 +23,7 @@ def grep_dict(dict1, col, vals):
     return { k : dict1[k][grep_dict_mask].copy() for k in dict1.keys() }
 
 def replace_elems(arr1, vals1, vals2):
-    '''Given 1d np array `arr1`, replaces all occurances of vals1[i] in `arr1` with vals2[i].'''
+    '''Given 1d np array `arr1`, returns a copy of `arr1` with all occurances of vals1[i] in `arr1` replaced with vals2[i].'''
     res = arr1.copy()
     for v1, v2 in zip(vals1, vals2):
         res = np.where(arr1==v1, v2, res)
@@ -354,6 +354,10 @@ def binaryarray_outline(binaryarr, X, Y):
                 dx_r = (X[j+1] - x)/2 if j<(len(X)-1) else (x - X[j-1])/2
                 line_segments_pts.append( ((x-dx_l,y0),(x+dx_r,y0)) )
     return line_segments_pts
+
+def is_unique_array(arr):
+    '''Given 1D np array `arr`, returns True iff all elements of `arr` are unique (i.e. `arr` has no duplicate elements).'''
+    return len(np.unique(arr)) == len(arr)
 
 ### COSMOLOGY ###
 def Omega_b(wb, h):
