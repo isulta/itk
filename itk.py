@@ -185,6 +185,18 @@ def periodic_bcs(x, x_ref, boxsize):
     """Returns `x` (np array or scalar) adjusted to have shortest distance to `x_ref` (np array (only permitted if `x` is array) or scalar) according to PBCs of length boxsize."""
     return x + boxsize*((x-x_ref)<-(boxsize/2)) + -boxsize*((x-x_ref)>(boxsize/2))
 
+def dist(x,y,z,x0,y0,z0, boxsize=None):
+    """Find Euclidean distance between two points `(x,y,z)` and `(x0, y0, z0)`. 
+    `(x,y,z)` should be 1D np arrays or scalars.
+    `(x0,y0,z0)` should be 1D np arrays (only if `(x,y,z)` are 1D np arrays of same length) or scalars.
+    If `boxsize` is defined, returns the shortest distance between the points according to PBCs of length `boxsize` for each dimension.
+    """
+    if boxsize:
+        x = periodic_bcs(x, x0, boxsize)
+        y = periodic_bcs(y, y0, boxsize)
+        z = periodic_bcs(z, z0, boxsize)
+    return np.sqrt( (x-x0)**2 + (y-y0)**2 + (z-z0)**2 )
+
 def many_to_one_OLD(x1, x0, verbose=False, assert_x0_unique=True, assert_x1_in_x0=True):
     """Old version. Performs a many-to-one matching from `x1` to `x0`, and returns array of indices of `x0` such that x0[idx] is x1.
     Every element of `x1` must be in `x0`, and `x0` must be unique.
