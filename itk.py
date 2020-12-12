@@ -359,6 +359,14 @@ def is_unique_array(arr):
     '''Given 1D np array `arr`, returns True iff all elements of `arr` are unique (i.e. `arr` has no duplicate elements).'''
     return len(np.unique(arr)) == len(arr)
 
+def indices_to_mask(arr, idx):
+    '''Converts array of indices `idx` into boolean mask `mask` 
+    such that `np.array_equal(np.flatnonzero(mask), np.unique(idx))` and `len(arr)==len(mask)`.
+    '''
+    mask = np.zeros_like(arr, dtype=bool)
+    mask[idx] = True
+    return mask
+
 ### COSMOLOGY ###
 def Omega_b(wb, h):
     return wb/h**2
