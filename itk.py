@@ -379,6 +379,47 @@ def indices_to_mask(arr, idx):
     mask[idx] = True
     return mask
 
+def sod_spatial_match(sod1, sod2, M1, M2, boxsize):
+    '''Given two sod halo catalogs, finds unmatched halos (i.e. `fof_halo_tag`s that occur in only one of the two catalogs). 
+    Attempts a spatial matching (using `fof_halo_center`) between the unmatched halos that have `fof_halo_mass` in [`M1`, `M2`].
+    Returns two np arrays of `fof_halo_tag`s of unmatched halos in the mass bin in `sod1` and `sod2`, respectively, 
+    where `fht1[i]` has been spatially matched to `fht2[i]`.
+    '''
+    assert is_unique_array(sod2['fof_halo_tag']), 'sod2 has duplicate FOF halo tags.'
+    assert is_unique_array(sod1['fof_halo_tag']), 'sod1 has duplicate FOF halo tags.'
+
+    assert len(sod2['fof_halo_tag'])==len(sod1['fof_halo_tag']), 'sod2 and sod1 have a different number of halos.'
+
+    _, idx2, idx1 = np.intersect1d(sod2['fof_halo_tag'], sod1['fof_halo_tag'], assume_unique=True, return_indices=True)
+    print(f"There are {len(idx2):,} matching FOF halo tags out of the {len(sod2['fof_halo_tag']):,} halos in each sod catalog ({len(idx2)/len(sod2['fof_halo_tag'])*100}%).")
+
+    # Mask for `sodi` of unmatched halos that have fof_halo_mass in [M1, M2]
+    maskmissing2 = (~indices_to_mask(sod2['fof_halo_tag'], idx2))&(inrange(sod2['fof_halo_mass'], (M1, M2)))
+    maskmissing1 = (~indices_to_mask(sod1['fof_halo_tag'], idx1))&(inrange(sod1['fof_halo_mass'], (M1, M2)))
+
+    assert np.sum(maskmissing2)==np.sum(maskmissing1), 'Unequal number of unmatched halos in sod2 and sod1 within the mass bin.'
+
+    # For each unmatched sod1 halo in the mass bin, find closest unmatched sod2 halo in the mass bin.
+    fht1 = sod1['fof_halo_tag'][maskmissing1]
+    idx2_match = []
+    for i1 in np.flatnonzero(maskmissing1):
+        dr = dist(sod2['fof_halo_center_x'][maskmissing2],
+                  sod2['fof_halo_center_y'][maskmissing2],
+                  sod2['fof_halo_center_z'][maskmissing2],
+                  sod1['fof_halo_center_x'][i1],
+                  sod1['fof_halo_center_y'][i1],
+                  sod1['fof_halo_center_z'][i1],
+                  boxsize
+                 )
+        idx2_match.append( np.flatnonzero(maskmissing2)[np.argmin(dr)] )
+
+    idx2_match = np.array(idx2_match)
+    assert is_unique_array(idx2_match), '1:1 match between sod1 and sod2 unmatched halos in mass bin not found.'
+    assert np.array_equal(sod1['fof_halo_mass'][maskmissing1], sod2['fof_halo_mass'][idx2_match]), 'fof halo mass of all spatial matches does not match.'
+    
+    fht2 = sod2['fof_halo_tag'][idx2_match]
+    return fht1, fht2
+
 ### COSMOLOGY ###
 def Omega_b(wb, h):
     return wb/h**2
