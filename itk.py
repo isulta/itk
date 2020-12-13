@@ -13,6 +13,10 @@ def plt_latex(dpi=120):
     # default figure size
     matplotlib.rcParams['figure.dpi'] = dpi
 
+def dict_deepcopy(dict1):
+    '''Given a dict of np arrays, returns a deep copy of the dict.'''
+    return { k : dict1[k].copy() for k in dict1.keys() }
+
 def combine_dicts(dict1, dict2):
     '''Combines two dicts of 1D numpy arrays, where the keys in the returned dict are the common keys of dict1 and dict2.'''
     return { k : np.concatenate((dict1[k], dict2[k])) for k in set(dict1.keys()).intersection(dict2.keys()) }
