@@ -33,12 +33,15 @@ def replace_elems(arr1, vals1, vals2):
         res = np.where(arr1==v1, v2, res)
     return res
 
-def h5_read_dict(outfile, path='/'):
+def h5_read_dict(outfile, path='/', keys=None):
     """Read an HDF5 file with given `path` (or default /) and return dictionary of numpy arrays."""
     import h5py
     hf = h5py.File(outfile, 'r')
+    if keys is None:
+        keys = hf[path].keys()
+    
     cc = {}
-    for k in hf[path].keys():
+    for k in keys:
         cc[k] = np.array( hf[path][k] )
     hf.close()
     return cc
