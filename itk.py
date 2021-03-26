@@ -427,6 +427,49 @@ def sod_spatial_match(sod1, sod2, M1, M2, boxsize):
     fht2 = sod2['fof_halo_tag'][idx2_match]
     return fht1, fht2
 
+def intersect1d_parallel(comm, rank, root, arr_root, arr_local, dtype_arr, data_local, dtype_data, assume_unique=True):
+    '''
+    Performs one-to-one element matching between an array on one rank and other arrays on all ranks.
+    Given a 1D numpy array `arr_root` on rank `root`, broadcasts `arr_root` to all ranks.
+    Performs np.intersect1d between `arr_root` and `arr_local` on each rank.
+    On each rank, `data_local` is an array of shape `arr_local` with data associated with each `arr_local` element.
+    Matches from all ranks between `arr_root` and the corresponding data are gathered on `root`.
+    
+    Returns on `root`:
+        `recvbuf_idx1`: indices of `arr_root`
+        `recvbuf_data`: corresponding data values found from all ranks
+    
+    Notes:
+        Argument `arr_root` should be None on all ranks except `root`.
+        `arr_root` and `arr_local` should have elements of dtype `dtype_arr`, and `data_local` should have elements of dtype `dtype_data`.
+    
+    Reference: https://stackoverflow.com/a/38008452
+    '''
+    if rank == root:
+        len_arr_root = len(arr_root)
+    else:
+        len_arr_root = None
+    len_arr_root = comm.bcast(len_arr_root, root=root)
+    if rank == root:
+        arr_root_cpy = arr_root.copy()
+    else:
+        arr_root_cpy = np.empty(len_arr_root, dtype=dtype_arr)
+    comm.Bcast(arr_root_cpy, root=root)
+
+    _, idx1, idx2 = np.intersect1d( arr_root_cpy, arr_local, return_indices=True, assume_unique=assume_unique )
+    sendcounts = np.array( comm.gather(len(idx1), root) )
+    if rank == root:
+        sendcounts_total = np.sum(sendcounts)
+        recvbuf_idx1 = np.empty(sendcounts_total, dtype=np.int64)
+        recvbuf_data = np.empty(sendcounts_total, dtype=dtype_data)
+    else:
+        recvbuf_idx1 = None
+        recvbuf_data = None
+    comm.Gatherv(sendbuf=idx1, recvbuf=(recvbuf_idx1, sendcounts), root=root)
+    comm.Gatherv(sendbuf=data_local[idx2], recvbuf=(recvbuf_data, sendcounts), root=root)
+
+    return recvbuf_idx1, recvbuf_data
+
 ### COSMOLOGY ###
 def Omega_b(wb, h):
     return wb/h**2
