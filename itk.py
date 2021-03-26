@@ -442,6 +442,7 @@ def intersect1d_parallel(comm, rank, root, arr_root, arr_local, dtype_arr, data_
     Notes:
         Argument `arr_root` should be None on all ranks except `root`.
         `arr_root` and `arr_local` should have elements of dtype `dtype_arr`, and `data_local` should have elements of dtype `dtype_data`.
+        `arr_root` and each `arr_local` are assumed to be unique.
     
     Reference: https://stackoverflow.com/a/38008452
     '''
@@ -469,6 +470,34 @@ def intersect1d_parallel(comm, rank, root, arr_root, arr_local, dtype_arr, data_
     comm.Gatherv(sendbuf=data_local[idx2], recvbuf=(recvbuf_data, sendcounts), root=root)
 
     return recvbuf_idx1, recvbuf_data
+
+def many_to_one_parallel(comm, rank, root, arr_root, arr_local, dtype_arr, data_local, dtype_data):
+    '''
+    Performs many-to-one element matching between an array on rank `root`, and unique arrays on all ranks.
+
+    Parameters:
+        `arr_root`: array on rank `root` that contains (possibly repeated) elements that are all found in `arr_local` over all ranks
+        `arr_local`: unique array on `rank` (elements must be unique over all ranks)
+        `dtype_arr`: dtype of elements of `arr_root` and `arr_local`
+        `data_local`: array on `rank` with data corresponding to each element of `arr_local`
+        `dtype_data`: dtype of elements of `data_local`
+
+    Returns on `root`:
+        `Data`: array of shape `arr_root` whose elements are from `data_local` (of all ranks) and correspond to `arr_root`
+    '''
+    if rank == root:
+        vals, inv = np.unique(arr_root, return_inverse=True)
+    else:
+        vals, inv = None, None
+    idx3, data = intersect1d_parallel(comm, rank, root, vals, arr_local, dtype_arr, data_local, dtype_data)
+    if rank == root:
+        assert len(idx3)==len(vals), f'Unique match not found for all elements of arr_root for rank {root}'
+        data_un = np.empty_like(data)
+        data_un[idx3] = data
+        Data = data_un[inv]
+    else:
+        Data = None
+    return Data
 
 ### COSMOLOGY ###
 def Omega_b(wb, h):
