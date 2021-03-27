@@ -427,6 +427,7 @@ def sod_spatial_match(sod1, sod2, M1, M2, boxsize):
     fht2 = sod2['fof_halo_tag'][idx2_match]
     return fht1, fht2
 
+### Parallel (MPI) functions ###
 def intersect1d_parallel(comm, rank, root, arr_root, arr_local, dtype_arr, data_local, dtype_data, assume_unique=True):
     '''
     Performs one-to-one element matching between an array on one rank and other arrays on all ranks.
@@ -498,6 +499,32 @@ def many_to_one_parallel(comm, rank, root, arr_root, arr_local, dtype_arr, data_
     else:
         Data = None
     return Data
+
+def h5_write_dict_parallel(comm, rank, cc, vars, dtypes_vars, fn):
+    '''
+    Combines dicts `cc` on all ranks into a single HDF5 file `fn`.
+    
+    Parameters:
+        `cc`: dictionary on each rank with items `'var': np.array`
+        `vars`: keys of `cc` to write to HDF5 file
+        `dtypes_vars`: dictionary with keys==`vars` and values==the corresponding data types of the elements in `cc['var']`
+        `fn`: output file name
+    
+    Note:
+        HDF5 and h5py must be built with parallel support enabled (see https://docs.h5py.org/en/stable/mpi.html).
+        For each rank, all np.array items in `cc` must have the same length.
+    '''
+    import h5py
+    num_elems = len(cc[vars[0]])                # local number of elements
+    num_elems_all = comm.allgather(num_elems)   # list of number of elements per rank
+    num_elems_total = np.sum(num_elems_all)     # total number of elements across all ranks
+
+    f = h5py.File(fn, 'w', driver='mpio', comm=comm)
+    for k in vars:
+        dset = f.create_dataset(k, (num_elems_total,), dtype=dtypes_vars[k])
+        dset[ sum(num_elems_all[:rank]) : sum(num_elems_all[:rank+1]) ] = cc[k]
+        comm.Barrier()
+    f.close()
 
 ### COSMOLOGY ###
 def Omega_b(wb, h):
