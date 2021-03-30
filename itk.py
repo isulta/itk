@@ -468,7 +468,11 @@ def intersect1d_parallel(comm, rank, root, arr_root, arr_local, dtype_arr, data_
         recvbuf_idx1 = None
         recvbuf_data = None
     comm.Gatherv(sendbuf=idx1, recvbuf=(recvbuf_idx1, sendcounts), root=root)
-    comm.Gatherv(sendbuf=data_local[idx2], recvbuf=(recvbuf_data, sendcounts), root=root)
+
+    # make a copy of matched `data_local` elements before gathering them on rank `root`
+    data_send = np.empty(len(idx2), dtype=dtype_data)
+    np.copyto(data_send, data_local[idx2], casting='no')
+    comm.Gatherv(sendbuf=data_send, recvbuf=(recvbuf_data, sendcounts), root=root)
 
     return recvbuf_idx1, recvbuf_data
 
