@@ -504,6 +504,32 @@ def many_to_one_parallel(comm, rank, root, arr_root, arr_local, dtype_arr, data_
         Data = None
     return Data
 
+def many_to_one_allranks(comm, rank, root, arr_root, arr_local, dtype_arr, data_local, dtype_data, verbose=False, assert_x0_unique=True, assert_x1_in_x0=False):
+    '''
+    Performs `many_to_one_parallel` for a `arr_root` on each rank.
+    '''
+    ranks = comm.Get_size()
+    Data_res = np.zeros(len(arr_root), dtype=dtype_data)
+    
+    # Match on local rank first
+    isin_local = np.isin(arr_root, arr_local)
+    isin_local_c = np.isin(arr_local, arr_root[isin_local])
+    if np.any(isin_local):
+        idx_m21_local = many_to_one(arr_root[isin_local], arr_local[isin_local_c], verbose, assert_x0_unique, assert_x1_in_x0)
+        Data_res[isin_local] = data_local[isin_local_c][idx_m21_local]
+
+    for root in range(ranks):
+        Data = many_to_one_parallel(comm, rank, root, 
+                                    ( arr_root[~isin_local] if rank==root else None ), 
+                                    ( arr_local[~isin_local_c] if rank!=root else np.array([], dtype=dtype_arr) ), 
+                                    dtype_arr, 
+                                    ( data_local[~isin_local_c] if rank!=root else np.array([], dtype=dtype_data) ), 
+                                    dtype_data)
+        if rank == root:
+            Data_res[~isin_local] = Data.copy()
+        comm.Barrier()
+    return Data_res
+
 def h5_write_dict_parallel(comm, rank, cc, vars, dtypes_vars, fn):
     '''
     Combines dicts `cc` on all ranks into a single HDF5 file `fn`.
