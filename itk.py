@@ -502,6 +502,40 @@ def intersect1d_parallel(comm, rank, root, arr_root, arr_local, dtype_arr, data_
 
     return recvbuf_idx1, recvbuf_data
 
+def intersect1d_parallel_sorted(comm, rank, root, arr_root, arr_local, dtype_arr, data_local, dtype_data):
+    '''
+    Same as `intersect1d_parallel`, but `arr_root` and each `arr_local` are assumed to be unique, SORTED arrays.
+    Uses numba-based `intersect1d_numba` instead of `np.intersect1d`.
+    '''
+    if rank == root:
+        len_arr_root = len(arr_root)
+    else:
+        len_arr_root = None
+    len_arr_root = comm.bcast(len_arr_root, root=root)
+    if rank == root:
+        arr_root_cpy = arr_root.copy()
+    else:
+        arr_root_cpy = np.empty(len_arr_root, dtype=dtype_arr)
+    comm.Bcast(arr_root_cpy, root=root)
+
+    idx1, idx2 = intersect1d_numba(arr_root_cpy, arr_local)
+    sendcounts = np.array( comm.gather(len(idx1), root) )
+    if rank == root:
+        sendcounts_total = np.sum(sendcounts)
+        recvbuf_idx1 = np.empty(sendcounts_total, dtype=np.int64)
+        recvbuf_data = np.empty(sendcounts_total, dtype=dtype_data)
+    else:
+        recvbuf_idx1 = None
+        recvbuf_data = None
+    comm.Gatherv(sendbuf=idx1, recvbuf=(recvbuf_idx1, sendcounts), root=root)
+
+    # make a copy of matched `data_local` elements before gathering them on rank `root`
+    data_send = np.empty(len(idx2), dtype=dtype_data)
+    np.copyto(data_send, data_local[idx2], casting='no')
+    comm.Gatherv(sendbuf=data_send, recvbuf=(recvbuf_data, sendcounts), root=root)
+
+    return recvbuf_idx1, recvbuf_data
+
 def many_to_one_parallel(comm, rank, root, arr_root, arr_local, dtype_arr, data_local, dtype_data):
     '''
     Performs many-to-one element matching between an array on rank `root`, and unique arrays on all ranks.
