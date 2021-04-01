@@ -507,6 +507,7 @@ def many_to_one_parallel(comm, rank, root, arr_root, arr_local, dtype_arr, data_
 def many_to_one_allranks(comm, rank, root, arr_root, arr_local, dtype_arr, data_local, dtype_data, verbose=False, assert_x0_unique=True, assert_x1_in_x0=False):
     '''
     Performs `many_to_one_parallel` for a `arr_root` on each rank.
+    TODO: add documentation; fully test function
     '''
     ranks = comm.Get_size()
     Data_res = np.zeros(len(arr_root), dtype=dtype_data)
