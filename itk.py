@@ -428,7 +428,7 @@ def sod_spatial_match(sod1, sod2, M1, M2, boxsize):
     fht2 = sod2['fof_halo_tag'][idx2_match]
     return fht1, fht2
 
-### Parallel (MPI) functions ###
+### Numba functions ###
 @njit
 def intersect1d_numba(ar1, ar2):
     '''
@@ -454,6 +454,7 @@ def intersect1d_numba(ar1, ar2):
                 j += 1
     return idx1[:k], idx2[:k]
 
+### Parallel (MPI) functions ###
 def intersect1d_parallel(comm, rank, root, arr_root, arr_local, dtype_arr, data_local, dtype_data, assume_unique=True):
     '''
     Performs one-to-one element matching between an array on one rank and other arrays on all ranks.
