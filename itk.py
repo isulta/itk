@@ -1,6 +1,7 @@
 from __future__ import division
 import numpy as np
 import matplotlib.pyplot as plt
+from numba import njit
 
 def plt_latex(dpi=120):
     """Set up latex for plt and change default figure dpi."""
@@ -428,6 +429,31 @@ def sod_spatial_match(sod1, sod2, M1, M2, boxsize):
     return fht1, fht2
 
 ### Parallel (MPI) functions ###
+@njit
+def intersect1d_numba(ar1, ar2):
+    '''
+    Numba implementation of `np.intersect1d(ar1, ar2, assume_unique=True, return_indices=True)`
+    `ar1` and `ar2` are assumed to be unique, SORTED arrays. 
+    Only the indices of matches in `ar1` and `ar2` are returned.
+
+    Adapted from https://stackoverflow.com/a/46573391.
+    '''
+    i = j = k = 0
+    idx1 = np.empty(len(ar1), dtype=np.int64)
+    idx2 = np.empty(len(ar1), dtype=np.int64)
+    while i < ar1.size and j < ar2.size:
+            if ar1[i] == ar2[j]:
+                idx1[k] = i
+                idx2[k] = j
+                k += 1
+                i += 1
+                j += 1
+            elif ar1[i] < ar2[j]:
+                i += 1
+            else: 
+                j += 1
+    return idx1[:k], idx2[:k]
+
 def intersect1d_parallel(comm, rank, root, arr_root, arr_local, dtype_arr, data_local, dtype_data, assume_unique=True):
     '''
     Performs one-to-one element matching between an array on one rank and other arrays on all ranks.
