@@ -592,6 +592,43 @@ def many_to_one_allranks(comm, rank, root, arr_root, arr_local, dtype_arr, data_
         comm.Barrier()
     return Data_res
 
+def many_to_one_allranks_numba(comm, rank, root, arr_root, arr_local, dtype_arr, data_local, dtype_data):
+    '''
+    Performs `many_to_one_parallel` for a `arr_root` on each rank.
+    numba-based implementation of `many_to_one_allranks`.
+    TODO: add documentation; test function
+    '''
+    ranks = comm.Get_size()
+    # Match on local rank first
+    arr_root_un, inv = np.unique(arr_root, return_inverse=True)
+    idxsrt_local = np.argsort(arr_local)
+
+    Data_local = np.zeros(len(arr_root_un), dtype=dtype_data)
+
+    idx1_local, idx2_local = intersect1d_numba(arr_root_un, arr_local[idxsrt_local])
+    Data_local[idx1_local] = data_local[idxsrt_local][idx2_local]
+
+    unmatched_idx1 = np.ones(len(arr_root_un), dtype=np.bool)
+    unmatched_idx1[idx1_local] = False
+    unmatched_idx1 = np.flatnonzero(unmatched_idx1)
+
+    unmatched_idx2 = np.ones(len(arr_local), dtype=np.bool)
+    unmatched_idx2[idx2_local] = False
+    unmatched_idx2 = idxsrt_local[unmatched_idx2]
+
+    for root in range(ranks):
+        idx1, data = intersect1d_parallel_sorted(comm, rank, root,
+                                                    ( arr_root_un[unmatched_idx1] if rank==root else None ), 
+                                                    ( arr_local[unmatched_idx2] if rank!=root else np.array([], dtype=dtype_arr) ), 
+                                                    dtype_arr, 
+                                                    ( data_local[unmatched_idx2] if rank!=root else np.array([], dtype=dtype_data) ), 
+                                                    dtype_data)
+        if rank == root:
+            Data_local[ unmatched_idx1[idx1] ] = data
+        # printr(f'Found {len(idx1) if rank==root else None} satellite core_tag matches in cc_prev.', root)
+        comm.Barrier()
+    return Data_local[inv]
+
 def h5_write_dict_parallel(comm, rank, cc, vars, dtypes_vars, fn):
     '''
     Combines dicts `cc` on all ranks into a single HDF5 file `fn`.
