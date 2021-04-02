@@ -2,6 +2,8 @@ from __future__ import division
 import numpy as np
 import matplotlib.pyplot as plt
 from numba import njit
+from astropy import units as u
+import yaml, os
 
 def plt_latex(dpi=120):
     """Set up latex for plt and change default figure dpi."""
@@ -97,7 +99,6 @@ def gio_combine(flist, cols):
 def read_binary_sh(step, binarydir, flist=None, verbose=True, columns=[('fof_halo_tag',np.int64), ('fof_halo_count',np.int64), ('subhalo_tag',np.int64), ('subhalo_count',np.int64), ('subhalo_mass',np.float32)]):
     """Read a binary format subhalo catalog and return a dictionary.
     Define either both step and binarydir, or flist."""
-    import os
     binary_keys = [k for k,_ in columns]
     dt = np.dtype(columns)
 
@@ -656,6 +657,11 @@ def h5_write_dict_parallel(comm, rank, cc, vars, dtypes_vars, fn):
     f.close()
 
 ### COSMOLOGY ###
+
+# Hubble time (1/H0) in units h^-1 Gyr
+# See https://arxiv.org/abs/1308.4150
+THUBBLE = (1/(100 * u.km/u.s/u.Mpc)).to(u.Gyr).value
+
 def Omega_b(wb, h):
     return wb/h**2
 
@@ -670,16 +676,11 @@ def mparticle(OMEGA_DM, wb, h, Vi, Ni):
     [Vi]: Mpc/h
     Vi and Ni are defined as V=Vi**3, N=Ni**3.
     """
-    from astropy.constants import G
-    from astropy import units as u
-    
     OMEGA_M = Omega_M(OMEGA_DM, wb, h)
-    # rhocrit = (3*(100 * u.km/u.s/u.Mpc)**2/(8*np.pi*G)).to(u.Msun/u.Mpc**3) #h^2 Msun/Mpc^3
     rhocrit = 2.77536627e11 #h^2 Msun/Mpc^3
     return (Vi/Ni)**3 * rhocrit * OMEGA_M
 
-# Define `itk.SIMPARAMS` as dict of cosmology simulation parameters. See `simulationParams.yaml`.
-import yaml, os                                                                                                                                   
+# Define `itk.SIMPARAMS` as dict of cosmology simulation parameters. See `simulationParams.yaml`.                                                                                                                                   
 with open( os.path.join(os.path.dirname(__file__), 'simulationParams.yaml'), 'r' ) as f: 
     SIMPARAMS = yaml.safe_load(f)
 for k, v in SIMPARAMS.items():
