@@ -688,3 +688,18 @@ for k, v in SIMPARAMS.items():
     v['OMEGA_M'] = Omega_M(v['OMEGA_DM'], v['wb'], v['h'])
     v['OMEGA_L'] = Omega_L(v['OMEGA_DM'], v['wb'], v['h'])
     v['PARTICLEMASS'] = mparticle(v['OMEGA_DM'], v['wb'], v['h'], v['Vi'], v['Ni'])
+
+### HACC ###
+def redshift(step, a_in=1/(1+200), a_fin=1, nsteps=500):
+    '''
+    Converts step number to redshift z for HACC simulations.
+
+    Notes:
+        `step` equal to `nsteps-1` returns 0.
+        The implemented formula and default {`a_in`, `a_fin`, `nsteps`} parameter values are valid for LJ, LJ-SV, LJ-HM, AlphaQ, and Farpoint.
+    '''
+    if step == (nsteps-1):
+        z = 0.
+    else:
+        z = ( a_in + ((a_fin - a_in)/nsteps)*(step+1) )**(-1) - 1
+    return z
