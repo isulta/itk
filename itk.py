@@ -345,9 +345,12 @@ def duplicate_rows(dict1, sort_key, printSame=False):
             else:
                 print(f'{k} column DOES NOT match for this {sort_key}: {el_array}.')
 
-def inrange(a, ra):
+def inrange(a, ra, right_bound_inclusive=True):
     a1, a2 = ra
-    return (a1 <= a)&(a <= a2)
+    if right_bound_inclusive:
+        return (a1 <= a)&(a <= a2)
+    else:
+        return (a1 <= a)&(a < a2)
 
 def binaryarray_outline(binaryarr, X, Y):
     '''Given a 2D np binary array `binaryarr`, and two 1D np arrays `X` and `Y` that label the columns and rows of `binaryarr`,
