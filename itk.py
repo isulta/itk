@@ -352,6 +352,13 @@ def inrange(a, ra, right_bound_inclusive=True):
     else:
         return (a1 <= a)&(a < a2)
 
+def n_array_equal(*args):
+    '''Given a variable number of numpy arrays, returns True iff all of the arrays are equal.'''
+    for i in range(len(args)-1):
+        if not np.array_equal(args[i], args[i+1]):
+            return False
+    return True
+
 def binaryarray_outline(binaryarr, X, Y):
     '''Given a 2D np binary array `binaryarr`, and two 1D np arrays `X` and `Y` that label the columns and rows of `binaryarr`,
     respectively, returns a list of lines segments that form an outline of the contiguous regions of `binaryarr[y,x]==True`.
