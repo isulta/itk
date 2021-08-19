@@ -5,6 +5,7 @@ from numba import njit
 from astropy import units as u
 import yaml, os
 
+### Matplotlib utilities ###
 def plt_latex(dpi=120):
     """Set up latex for plt and change default figure dpi."""
     import matplotlib.colors
@@ -16,6 +17,20 @@ def plt_latex(dpi=120):
     # default figure size
     matplotlib.rcParams['figure.dpi'] = dpi
 
+# plt.style.use(['science', 'high-vis'])
+# COLOR_SCHEME = ['#2402ba','#b400e0','#98c1d9','#ff0000','#292800','#ff9b71']
+
+def sync_lim(axes, limtype, sync=True):
+    '''Given a list of axes and limtype (`'x'` or `'y'`), returns the shared axis limits.
+    If `sync` is True, sets the axes limits to the shared axis limits (analogous to setting `sharex=True` or `sharey=True` in `plt.subplots`).
+    '''
+    alllims = np.array([ax.get_ylim() if limtype=='y' else ax.get_xlim() for ax in axes])
+    lim = (alllims.min(), alllims.max())
+    if sync:
+        [ax.set_ylim(lim) if limtype=='y' else ax.set_xlim(lim) for ax in axes]
+    return lim
+
+### Miscellaneous utilities ###
 def dict_deepcopy(dict1):
     '''Given a dict of np arrays, returns a deep copy of the dict.'''
     return { k : dict1[k].copy() for k in dict1.keys() }
