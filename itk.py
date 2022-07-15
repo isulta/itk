@@ -454,6 +454,24 @@ def sod_spatial_match(sod1, sod2, M1, M2, boxsize):
     fht2 = sod2['fof_halo_tag'][idx2_match]
     return fht1, fht2
 
+def get_dir_size(start_path = '.'):
+    '''Find total size in bytes of (possibly nested) directory.
+    Returns total size of all files in directory `start_path`, and size of largest file in directory, both in bytes. 
+    Adapted from https://stackoverflow.com/a/1392549.
+    '''
+    total_size = 0
+    max_size = 0
+    for dirpath, dirnames, filenames in os.walk(start_path):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            # skip if it is symbolic link
+            if not os.path.islink(fp):
+                s = os.path.getsize(fp)
+                total_size += s
+                max_size = max(max_size, s)
+
+    return np.array([total_size, max_size])
+
 ### Numba functions ###
 @njit
 def intersect1d_numba(ar1, ar2):
