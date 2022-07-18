@@ -699,6 +699,33 @@ def h5_write_dict_parallel(comm, rank, cc, vars, dtypes_vars, fn):
         comm.Barrier()
     f.close()
 
+def dynamic_load_balancing_MPI(MPI, Ntasks, func_task, verbose=True):
+    '''Dynamic load balancing in MPI using manager-worker model (see https://stackoverflow.com/a/11198315).
+    Rank 0 iteratively distributes each `task` (integer `i in range(Ntasks)`) to worker ranks as they become free.
+    Ranks 1 to size-1 execute `func_task(task)` for each `task` they are given.
+    '''
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    size = comm.Get_size()
+    assert size > 1, 'MPI must be run with at least one worker rank'
+
+    if rank == 0:
+        for task in range(Ntasks):
+            req = comm.irecv(source=MPI.ANY_SOURCE)
+            sendrank = req.wait()
+            comm.send(task, dest=sendrank)
+        for i in range(1, size):
+            comm.irecv(source=i)
+            comm.isend('done', dest=i)
+    else:
+        while True:
+            comm.send(rank, dest=0)
+            task = comm.recv(source=0)
+            if task == 'done': break
+            if verbose: print(f'Rank {rank} recieved task {task}', flush=True)
+            func_task(task)
+    if verbose: print(f'Rank {rank} is done with dynamic_load_balancing_MPI!', flush=True)
+
 ### COSMOLOGY ###
 
 # Hubble time (1/H0) in units h^-1 Gyr
